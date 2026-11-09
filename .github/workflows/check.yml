@@ -1,0 +1,39 @@
+name: Verificar rama
+
+# Compila y prueba las ramas de trabajo sin publicar nada (el APK oficial solo sale de main).
+on:
+  push:
+    branches-ignore: [main, master]
+  workflow_dispatch:
+
+concurrency:
+  group: check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.10.2
+
+      - name: Compilar APK
+        run: gradle assembleDebug --no-daemon --stacktrace
+
+      - name: Pruebas unitarias
+        run: gradle testDebugUnitTest --no-daemon
+
+      - name: Guardar APK de prueba
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: NioroLife-rama-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
