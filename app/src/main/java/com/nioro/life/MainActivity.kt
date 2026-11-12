@@ -2,6 +2,7 @@ package com.nioro.life
 
 import android.Manifest
 import android.app.Activity
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color as AndroidColor
 import android.os.Build
@@ -53,6 +54,8 @@ import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
     private var resumeTick by mutableIntStateOf(0)
+    /** Pantalla pedida desde fuera (p. ej. el acceso directo "Nioro IA"). */
+    private var openRequest by mutableStateOf<String?>(null)
 
     private val notifPermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
@@ -70,7 +73,14 @@ class MainActivity : ComponentActivity() {
             notifPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
         Scheduler.scheduleAll(this)
-        setContent { NioroApp(resumeTick) }
+        openRequest = intent?.getStringExtra("open")
+        setContent { NioroApp(resumeTick, openRequest) { openRequest = null } }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        intent.getStringExtra("open")?.let { openRequest = it }
     }
 
     override fun onResume() {
@@ -80,7 +90,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun NioroApp(resumeTick: Int) {
+fun NioroApp(resumeTick: Int, openRequest: String? = null, onOpened: () -> Unit = {}) {
     val ctx = LocalContext.current
     var settings by remember { mutableStateOf(Store.loadSettings(ctx)) }
     var notes by remember { mutableStateOf(Store.loadNotes(ctx)) }
@@ -93,6 +103,10 @@ fun NioroApp(resumeTick: Int) {
     // punto del dock desde donde crece la pantalla que se abre (y hacia donde se encoge al volver)
     var dockOrigin by remember { mutableStateOf(TransformOrigin(0.5f, 0.92f)) }
     var showSettings by remember { mutableStateOf(false) }
+    // al abrir el asistente desde la burbuja o el acceso directo, saluda y escucha
+    var aiGreet by remember { mutableStateOf(false) }
+    // punto de la burbuja desde donde crece el asistente (y hacia donde se encoge al cerrarlo)
+    var aiOrigin by remember { mutableStateOf(TransformOrigin(0.85f, 0.6f)) }
     var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
 
     LaunchedEffect(resumeTick) {
@@ -103,11 +117,24 @@ fun NioroApp(resumeTick: Int) {
         lists = Store.loadLists(ctx)
         history = Store.loadHistory(ctx)
     }
-    // al volver al inicio, refresca el resumen de entrenamiento
+    // al volver al inicio, recarga lo que pudo cambiar en otras pantallas (p. ej. lo que anotó el asistente)
     LaunchedEffect(screen, resumeTick) {
         if (screen == "home") {
             trainActive = TrainStore.loadActive(ctx)
+            settings = Store.loadSettings(ctx)
+            notes = Store.loadNotes(ctx)
+            tx = Store.loadTx(ctx)
+            cobros = Store.loadCobros(ctx)
+            lists = Store.loadLists(ctx)
+            history = Store.loadHistory(ctx)
         }
+    }
+    LaunchedEffect(openRequest) {
+        val r = openRequest ?: return@LaunchedEffect
+        aiGreet = r == "ai"
+        if (r == "ai") aiOrigin = TransformOrigin(0.5f, 0.45f)
+        screen = r
+        onOpened()
     }
     LaunchedEffect(Unit) {
         while (true) {
@@ -195,7 +222,18 @@ fun NioroApp(resumeTick: Int) {
                         val o = dockOrigin
                         val grow = spring<Float>(dampingRatio = 0.82f, stiffness = Spring.StiffnessMediumLow)
                         val spec = spring<androidx.compose.ui.unit.IntOffset>(dampingRatio = 0.86f, stiffness = Spring.StiffnessMediumLow)
+                        val ai = aiOrigin
                         when {
+                            // la burbuja se abre: el asistente nace de ella y se expande
+                            targetState == "ai" ->
+                                (scaleIn(spring(dampingRatio = 0.72f, stiffness = Spring.StiffnessMediumLow), initialScale = 0.05f, transformOrigin = ai) +
+                                    fadeIn(tween(180)))
+                                    .togetherWith(fadeOut(tween(260)) + scaleOut(tween(320), targetScale = 0.94f))
+                            // al cerrarlo, se encoge de vuelta hacia la burbuja
+                            initialState == "ai" && targetState == "home" ->
+                                ((fadeIn(tween(280)) + scaleIn(tween(340), initialScale = 0.94f))
+                                    .togetherWith(scaleOut(tween(300), targetScale = 0.05f, transformOrigin = ai) + fadeOut(tween(260))))
+                                    .apply { targetContentZIndex = -1f }
                             // desde el dock: la pantalla nace del ícono y se expande
                             initialState == "home" && targetState in dockScreens ->
                                 (scaleIn(grow, initialScale = 0.12f, transformOrigin = o) + fadeIn(tween(200)))
@@ -221,6 +259,7 @@ fun NioroApp(resumeTick: Int) {
                         "finance" -> FinanceScreen(tx, cobros, saveTx, deleteTx, saveCobro, deleteCobro) { screen = "home" }
                         "train" -> TrainScreen { screen = "home" }
                         "casa" -> CasaScreen { screen = "home" }
+                        "ai" -> AssistantScreen(onBack = { screen = "home" }, greetOnOpen = aiGreet, onNavigate = { aiGreet = false; screen = it })
                         "lists" -> ListsScreen(
                             lists, history,
                             onHistory = { h -> history = h; Store.saveHistory(ctx, h) },
@@ -261,6 +300,11 @@ fun NioroApp(resumeTick: Int) {
                         dockOrigin = origin
                         screen = target
                     }
+                }
+                AssistantBubble(visible = screen != "ai") { origin ->
+                    aiOrigin = origin
+                    aiGreet = true
+                    screen = "ai"
                 }
                 if (showSettings) {
                     SettingsDialog(

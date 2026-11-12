@@ -81,6 +81,11 @@ back() { timeout 20 adb shell input keyevent 4; sleep 2; }
   tap "Enlazar con Smart Life" 2; look 55_enlazar_smartlife; back
   back  # vuelve de Casa al inicio para los pasos del menú
 
+  # burbuja del asistente: apertura animada + saludo (sin clave aparece el asistente para conectar Gemini)
+  tap "=Nioro IA" 1; shot 60a_asistente_abriendo; sleep 2; look 60_asistente
+  tap "=Después" 2; look 61_asistente_saludo
+  back
+
   timeout 60 adb shell am start -W -n $P/.MainActivity > /dev/null 2>&1; sleep 5
   tap "Men" 3; look 08_menu_noche
   tap "=Día"; look 09_menu_dia

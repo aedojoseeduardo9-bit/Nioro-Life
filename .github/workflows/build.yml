@@ -29,10 +29,13 @@ jobs:
         with:
           gradle-version: 8.10.2
 
+      # El número de compilación sigue por encima de los de la cuenta anterior (+1000):
+      # así el teléfono la reconoce como más nueva y Android deja instalarla encima sin perder datos.
+      - name: Número de compilación
+        run: echo "BUILD_NUMBER=$((GITHUB_RUN_NUMBER + 1000))" >> "$GITHUB_ENV"
+
       - name: Compilar APK
         id: gradle
-        env:
-          BUILD_NUMBER: ${{ github.run_number }}
         run: |
           set -o pipefail
           gradle assembleDebug --no-daemon --stacktrace 2>&1 | tee build.log
@@ -85,7 +88,7 @@ jobs:
           gh release delete latest --yes --cleanup-tag || true
           gh release create latest NioroLife.apk \
             --title "Nioro Life" \
-            --notes "build:${{ github.run_number }} · Descarga NioroLife.apk e instálalo en tu Samsung." \
+            --notes "build:$BUILD_NUMBER · Descarga NioroLife.apk e instálalo en tu Samsung." \
             --latest
 
   smoke:

@@ -17,6 +17,10 @@ App 100 % nativa: sin web, sin WebView. Funciona sin internet.
 - **Puente con Smart Life:** enlaza tu cuenta de Smart Life (gratis, con un proyecto en iot.tuya.com) y controla
   tus equipos desde Casa, con efectos animados (arcoíris, fuego, aurora, respirar…), efectos propios, apagado
   programado y "encender/apagar todo".
+- **Nioro IA (asistente):** una burbuja flotante abre el asistente con una animación y te saluda según la hora.
+  Le hablas o escribes: llama a tus contactos, envía SMS y WhatsApp, lee y responde tus mensajes y correos
+  nuevos, pone alarmas, crea eventos, busca en internet y maneja Nioro (notas, gastos, listas, luces, sueño).
+  Usa Gemini de Google con tu propia clave gratuita. Llamadas, SMS y respuestas siempre te piden confirmación.
 - **Alarmas del sistema (AlarmManager):** suenan con la app cerrada y el teléfono bloqueado, y se reprograman tras reiniciar.
 
 ## Descargar el APK
