@@ -14,7 +14,7 @@ android {
         targetSdk = 35
         // GitHub numera cada compilación; la app compara este número para saber si hay una versión nueva.
         versionCode = (System.getenv("BUILD_NUMBER") ?: "3").toInt()
-        versionName = "2.2"
+        versionName = "2.3"
     }
 
     // Firma fija: sin ella, Android no deja actualizar la app encima de la anterior.

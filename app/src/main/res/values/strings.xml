@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="shortcut_ai_short">Nioro IA</string>
+    <string name="shortcut_ai_long">Hablar con Nioro IA</string>
+</resources>

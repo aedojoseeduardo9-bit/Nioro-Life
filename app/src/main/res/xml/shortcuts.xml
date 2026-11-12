@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Mantén pulsado el ícono de Nioro Life → "Nioro IA" abre el asistente escuchando. -->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutId="ai"
+        android:shortcutLongLabel="@string/shortcut_ai_long"
+        android:shortcutShortLabel="@string/shortcut_ai_short">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetClass="com.nioro.life.MainActivity"
+            android:targetPackage="com.nioro.life">
+            <extra
+                android:name="open"
+                android:value="ai" />
+        </intent>
+    </shortcut>
+</shortcuts>

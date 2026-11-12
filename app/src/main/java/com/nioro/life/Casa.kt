@@ -280,7 +280,7 @@ fun CasaScreen(onBack: () -> Unit) {
 }
 
 /** Orden en formato Tasmota/OpenBeken; null si ese firmware no la tiene. */
-private fun localCmd(cmd: LightCmd): String? = when (cmd) {
+fun localCmd(cmd: LightCmd): String? = when (cmd) {
     is LightCmd.Power -> if (cmd.on) "Power On" else "Power Off"
     is LightCmd.Level -> "Dimmer ${cmd.pct}"
     is LightCmd.Hsv -> "HSBColor ${cmd.h},${cmd.s},${cmd.v}"

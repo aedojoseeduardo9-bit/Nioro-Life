@@ -51,6 +51,14 @@ El usuario quiere que **las actualizaciones le lleguen solas** a la app. El fluj
   a la cuenta de Smart Life con un QR; Access ID + Secret, firma HMAC-SHA256). Traduce `LightCmd` a códigos
   Tuya (`switch_led`, `work_mode`, `bright_value_v2`, `temp_value_v2`, `colour_data_v2`, `scene_data_v2`,
   `countdown_1`). Efectos animados (`LIGHT_EFFECTS` + propios) y apagado programado solo en equipos Smart Life.
+- Asistente **Nioro IA** (cerebro: Gemini, clave gratis de aistudio.google.com guardada en el teléfono):
+  `Bubble.kt` (burbuja flotante arrastrable que abre el asistente; `greeting(hora)`), `Assistant.kt` (pantalla:
+  esfera `NioroOrb`, apertura animada, saludo hablado, voz con `SpeechRecognizer`/`TextToSpeech`, chat, tarjetas de
+  confirmación, ajustes y permisos), `AssistantTools.kt` (las acciones que Gemini puede llamar: contactos, llamar,
+  SMS, WhatsApp, leer/responder mensajes, correo, alarmas, calendario, mapas, búsqueda web, notas, finanzas,
+  listas, luces, sueño, entreno), `GeminiClient.kt` (API REST `generateContent`, historial con firmas de
+  pensamiento intactas) y `NotiListener.kt` (lee notificaciones y responde con su acción "Responder").
+  Llamar, enviar SMS y responder mensajes SIEMPRE piden confirmación en pantalla.
 - `Finance.kt`, `FinanceAI.kt`, `Export.kt`, `Lists.kt`, `Alarms.kt`, `Updater.kt`, `Data.kt` (`Store`).
 
 ## Pendiente conocido
